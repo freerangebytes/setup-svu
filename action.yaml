@@ -1,5 +1,5 @@
 ---
-name: "Setup svu"
+name: "svu Setup"
 description: "Installs svu for use by other actions."
 branding:
   icon: "package"
