@@ -1,8 +1,9 @@
+{{- $action := datasource "action" -}}
 <!-- This file is generated. Do not edit directly. See .docs/README.md for details. -->
 
-# Setup svu
+# {{ $action.name }}
 
-Installs svu for use by other actions.
+{{ $action.description }}
 
 ## Why Use This Action?
 
@@ -11,26 +12,7 @@ Installs svu for use by other actions.
 - **Version pinning** – Specify exact versions for reproducible CI builds, avoiding unexpected changes from floating tags
 - **Lightweight and focused** – Does one thing well: installs svu and gets out of your way
 
-## Usage
-
-```yaml
-- uses: freerangebytes/setup-svu@v0.1.0
-  with:
-    # The version to install
-    version: "3.3.0"
-```
-
-## Inputs
-
-| Name | Description | Required | Default |
-| ---- | ----------- | -------- | ------- |
-| `version` | The version to install | `true` | `3.3.0` |
-
-## Outputs
-
-| Name | Description |
-| ---- | ----------- |
-| `version` | The version of svu installed |
+{{ template "action" $action }}
 
 ## Contributing
 

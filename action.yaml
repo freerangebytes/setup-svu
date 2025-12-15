@@ -1,0 +1,92 @@
+---
+name: "Setup svu"
+description: "Installs svu for use by other actions."
+branding:
+  icon: "package"
+  color: "blue"
+inputs:
+  version:
+    description: "The version to install"
+    default: 3.3.0
+    required: true
+outputs:
+  version:
+    description: "The version of svu installed"
+    value: ${{ inputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Check OS
+      id: check-os
+      uses: actions/github-script@v8
+      env:
+        RUNNER_OS: ${{ runner.os }}
+        RUNNER_ARCH: ${{ runner.arch }}
+      with:
+        script: |
+          const process = require('node:process');
+          runner = {
+            os: process.env['RUNNER_OS'].toLowerCase(),
+            arch: process.env['RUNNER_ARCH'].toLowerCase()
+          }
+
+          core.startGroup("Check OS");
+          core.info(`Runner OS is: ${runner.os}`);
+
+          if (runner.os !== 'linux') {
+            core.error(`${runner.os} is not supported. Must use a Linux OS.`)
+            core.setFailed(`${runner.os} is not supported`)
+          }
+
+          core.endGroup();
+          core.startGroup("Checking architecture");
+          let arch = ''
+          switch (runner.arch)  {
+            case "x86": {
+              arch = '386';
+              break;
+            }
+            case "x64": {
+              arch = 'amd64';
+              break;
+            }
+            case "arm": {
+              arch = 'armv6';
+              break;
+            }
+            case "arm64": {
+              arch = 'arm64';
+              break;
+            }
+            default: {
+              core.error(`${runner.arch} is not supported`);
+              core.setFailed(`${runner.arch} is not supported`)
+            }
+          }
+          core.info(`Runner arch is: ${arch}`);
+          core.setOutput('arch', arch);
+          core.endGroup();
+    - name: Setup
+      id: setup
+      env:
+        SVU_VERSION: ${{ inputs.version }}
+        TARGET_ARCH: ${{ steps.check-os.outputs.arch }}
+        BASE_URL: "https://github.com/caarlos0/svu/releases/download"
+      shell: bash
+      run: |-
+        echo "::group::Downloading"
+        echo "Downloading version $SVU_VERSION"
+        FILENAME="svu_${SVU_VERSION}_linux_${TARGET_ARCH}.tar.gz"
+        DOWNLOAD_URL="${BASE_URL}/v${SVU_VERSION}/${FILENAME}"
+        echo "::debug::Downloading from ${DOWNLOAD_URL}"
+        echo "::debug::Downloading to ${RUNNER_TEMP}/svu-${SVU_VERSION}.tar.gz"
+        curl -sL -o "${RUNNER_TEMP}/svu-${SVU_VERSION}.tar.gz" "${DOWNLOAD_URL}"
+        echo ":endgroup::"
+
+        echo "::group::Installing"
+        echo "::debug::Extracting ${RUNNER_TEMP}/svu-${SVU_VERSION}.tar.gz"
+        tar -C "${RUNNER_TEMP}" -xzf "${RUNNER_TEMP}/svu-${SVU_VERSION}.tar.gz"
+        echo "Installing to /usr/local/bin"
+        sudo mv "${RUNNER_TEMP}/svu"  /usr/local/bin/
+        sudo chmod +x /usr/local/bin/svu
+        echo "::endgroup::"
