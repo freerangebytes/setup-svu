@@ -1,6 +1,6 @@
 <!-- This file is generated. Do not edit directly. See .docs/README.md for details. -->
 
-# Setup svu
+# svu Setup
 
 Installs svu for use by other actions.
 
