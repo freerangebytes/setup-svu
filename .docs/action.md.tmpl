@@ -1,0 +1,28 @@
+{{- define "action" -}}
+## Usage
+
+```yaml
+- uses: freerangebytes/setup-svu@v0.1.0
+  with:
+{{- range $name, $input := .inputs }}
+    # {{ $input.description }}
+    {{ $name }}: {{ $input.default | quote }}
+{{- end }}
+```
+
+## Inputs
+
+| Name | Description | Required | Default |
+| ---- | ----------- | -------- | ------- |
+{{- range $name, $input := .inputs }}
+| `{{ $name }}` | {{ $input.description }} | {{ if $input.required }}`true`{{ else }}`false`{{ end }} | {{ if $input.default }}`{{ $input.default }}`{{ else }}-{{ end }} |
+{{- end }}
+
+## Outputs
+
+| Name | Description |
+| ---- | ----------- |
+{{- range $name, $output := .outputs }}
+| `{{ $name }}` | {{ $output.description }} |
+{{- end }}
+{{- end -}}
