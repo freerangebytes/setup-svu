@@ -35,14 +35,7 @@ jobs:
           echo "Current: $CURRENT"
           echo "Next: $NEXT"
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
-
-          if [ "$CURRENT" = "$NEXT" ]; then
-            echo "No version bump needed"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=$NEXT" >> "$GITHUB_OUTPUT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
 
   tag:
     name: Create Tag and Release
@@ -52,69 +45,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Create Tag
-        uses: actions/github-script@v8
-        env:
-          VERSION: ${{ needs.calculateVersion.outputs.version }}
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Create Tag and Release
+        id: release
+        uses: freerangebytes/auto-tag-and-release@v0.2.1
         with:
-          script: |
-            const version = process.env['VERSION'];
-            core.info(`Creating tag: ${version}`);
-
-            await github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: `refs/tags/${version}`,
-              sha: context.sha
-            });
-
-      - name: Create Release
-        uses: actions/github-script@v8
-        env:
-          VERSION: ${{ needs.calculateVersion.outputs.version }}
-        with:
-          script: |
-            const version = process.env['VERSION'];
-            core.info(`Creating release: ${version}`);
-
-            await github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: version,
-              name: version,
-              generate_release_notes: true
-            });
-
-  summary:
-    name: Write summary
-    runs-on: ubuntu-latest
-    needs: [calculateVersion, tag]
-    steps:
-      - name: Write summary
-        env:
-          CURRENT: ${{ needs.calculateVersion.outputs.current }}
-          VERSION: ${{ needs.calculateVersion.outputs.version }}
-        run: |
-          {
-            echo "## Release Summary"
-            echo ""
-            echo "**Previous version:** $CURRENT"
-            echo "**New version:** $VERSION"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  no-release:
-    name: No Release
-    runs-on: ubuntu-latest
-    needs: calculateVersion
-    if: needs.calculateVersion.outputs.skip == 'true'
-    steps:
-      - name: Write summary
-        run: |
-          {
-            echo "## No Release"
-            echo ""
-            echo "No version bump triggered. Use conventional commits:"
-            echo "- \`fix:\` → patch"
-            echo "- \`feat:\` → minor"
-            echo "- \`feat!:\` or \`BREAKING CHANGE:\` → major"
-          } >> "$GITHUB_STEP_SUMMARY"
+          version: ${{ needs.calculateVersion.outputs.version }}
+          previous-version: ${{ needs.calculateVersion.outputs.current }}
