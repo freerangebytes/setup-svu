@@ -2,6 +2,10 @@
 name: Test
 on:
   pull_request:
+
+permissions:
+  contents: read
+
 jobs:
   svu-setup:
     name: svu Setup - Default
