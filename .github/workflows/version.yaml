@@ -50,7 +50,7 @@ jobs:
 
       - name: Create Tag and Release
         id: release
-        uses: freerangebytes/auto-tag-and-release@47e88d0e024313ddef72d0d1f29836b09679905a # v0.3.0
+        uses: freerangebytes/auto-tag-and-release@723446276a78277e0971bad96fc7f141c5290df4 # v0.3.1
         with:
           version: ${{ needs.calculateVersion.outputs.version }}
           previous-version: ${{ needs.calculateVersion.outputs.current }}
